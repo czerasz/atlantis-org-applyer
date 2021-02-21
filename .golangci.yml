@@ -1,0 +1,81 @@
+linters:
+  enable:
+    - stylecheck
+    - interfacer
+    - unconvert
+    - goconst
+    - goconst
+    - gocyclo
+    - gocognit
+    - asciicheck
+    - gofmt
+    - goimports
+    - maligned
+    - depguard
+    - misspell
+    - lll
+    - unparam
+    - dogsled
+    - nakedret
+    - prealloc
+    - scopelint
+    - gocritic
+    - gochecknoinits
+    - funlen
+    - whitespace
+    - wsl
+    - goprintffuncname
+    - gomnd
+    - gomodguard
+    - testpackage
+    - nestif
+    - exportloopref
+    - exhaustive
+    - nolintlint
+    - godot
+    - goerr113
+    - godox
+    - bodyclose
+    - cyclop
+    - dupl
+    - durationcheck
+    - errorlint
+    # - exhaustivestruct
+    - forbidigo
+    - gci
+    - gochecknoglobals
+    - gofumpt
+    - goheader
+    - golint
+    - gosec
+    - ifshort
+    - makezero
+    - nlreturn
+    - noctx
+    - paralleltest
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - thelper
+    - tparallel
+    # - wrapcheck
+
+linters-settings:
+  funlen:
+    lines: 75
+  cyclop:
+    # the maximal code complexity to report
+    max-complexity: 13
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude lll issues for test files
+    - path: _test\.go
+      linters:
+        - lll
+    # Exclude lll issues specific comment
+    - source: "// - code: https://github.com/runatlantis/atlantis"
+      linters:
+        - lll
