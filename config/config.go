@@ -10,8 +10,8 @@ type Config struct {
 	// resources:
 	// - documentation: https://www.runatlantis.io/docs/custom-workflows.html#reference
 	// - code: https://github.com/runatlantis/atlantis/blob/2ac77dbe5873cce909d847886ac269c28804bb46/server/events/runtime/run_step_runner.go#L40-L56
-	GitHubHostname string `envconfig:"GITHUB_HOSTNAME"`
-	GitHubToken    string `required:"true" envconfig:"GITHUB_TOKEN"`
+	GitHubBaseURL string `envconfig:"GITHUB_BASE_URL"`
+	GitHubToken   string `required:"true" envconfig:"GITHUB_TOKEN"`
 
 	RepoOwner string `required:"true" envconfig:"BASE_REPO_OWNER"`
 	RepoName  string `required:"true" envconfig:"BASE_REPO_NAME"`

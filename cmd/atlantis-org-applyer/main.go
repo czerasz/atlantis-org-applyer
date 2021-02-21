@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -28,11 +27,10 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 
 	var ghc *github.Client
-	if strings.TrimSpace(c.GitHubHostname) == "" {
+	if strings.TrimSpace(c.GitHubBaseURL) == "" {
 		ghc = github.NewClient(tc)
 	} else {
-		baseURL := fmt.Sprintf("https://%s", c.GitHubHostname)
-		ghc, err = github.NewEnterpriseClient(baseURL, baseURL, tc)
+		ghc, err = github.NewEnterpriseClient(c.GitHubBaseURL, c.GitHubBaseURL, tc)
 		if err != nil {
 			log.Fatalf("can't create client: %v", err)
 		}
