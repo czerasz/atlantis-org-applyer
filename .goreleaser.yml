@@ -1,0 +1,43 @@
+# Global hooks
+before:
+  hooks:
+  - go mod download
+
+builds:
+  -
+    # ID of the build.
+    # Defaults to the project name.
+    id: "atlantis-org-applyer"
+
+    # Path to main.go file or main package.
+    # Default is `.`.
+    main: ./cmd/atlantis-org-applyer/main.go
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    # Default is the name of the project directory.
+    binary: atlantis-org-applyer
+
+    # Custom environment variables to be set during the builds.
+    # Default is empty.
+    env:
+      - CGO_ENABLED=0
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are darwin and linux.
+    goos:
+      - darwin
+      - linux
+      # - freebsd
+      # - windows
+
+archives:
+  - id: "atlantis-org-applyer"
+    builds: ["atlantis-org-applyer"]
+    format: binary
+    # Archive name template
+    name_template: "{{ .Binary }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}-{{ .Mips }}{{ end }}"
+
+checksum:
+  name_template: "atlantis-org-applyer-v{{ .Version }}.sha256sum"
