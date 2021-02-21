@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/google/go-github/github"
-	"gopkg.in/yaml.v3"
-
 	"github.com/czerasz/atlantis-org-applyer/config"
 	"github.com/czerasz/atlantis-org-applyer/project"
+	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
-// Verifyer abstracts the verification process
+// Verifyer abstracts the verification process.
 type Verifyer struct {
 	client   *github.Client
 	conf     config.Config
@@ -25,11 +25,14 @@ type Verifyer struct {
 	githubTeamsUserTeamCache map[string]bool
 }
 
-// Verify returns true if apply should be executed
+// Verify returns true if apply should be executed.
 func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 	var pr int
+
 	prConvOnce := &sync.Once{}
+
 	var mergeable bool
+
 	mergeableOnce := &sync.Once{}
 
 	for _, p := range v.projects {
@@ -42,6 +45,7 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+
 		if !valid {
 			continue
 		}
@@ -50,26 +54,34 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+
 		if !valid {
 			continue
 		}
 
 		if p.RequiredMergeable {
 			var prErr error
+
 			prConvOnce.Do(func() {
 				pr, prErr = strconv.Atoi(v.conf.PRID)
 			})
+
 			if prErr != nil {
 				return false, fmt.Errorf("PR ID can not be parsed: %w", prErr)
 			}
 
 			var mergeableErr error
+
 			mergeableOnce.Do(func() {
 				mergeable, mergeableErr = isMergeable(ctx, v.client, v.conf.RepoOwner, v.conf.RepoName, pr)
 			})
+
 			if mergeableErr != nil {
-				return false, fmt.Errorf("error while checking mergable state for PR %d in %s/%s: %w", pr, v.conf.RepoOwner, v.conf.RepoName, err)
+				msg := fmt.Sprintf("error while checking mergable state for PR %d in %s/%s", pr, v.conf.RepoOwner, v.conf.RepoName)
+
+				return false, fmt.Errorf("%s: %w", msg, err)
 			}
+
 			if !mergeable {
 				continue
 			}
@@ -79,10 +91,12 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+
 		if allowed {
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 
@@ -96,9 +110,12 @@ func (v *Verifyer) applyerAllowed(ctx context.Context, p project.Project, userna
 	for _, team := range p.Teams() {
 		cacheKey := fmt.Sprintf("%s/%s", team, username)
 		if ok, exists := v.githubTeamsUserTeamCache[cacheKey]; exists {
-			if ok { // only theoretical case - will not happen in real life since Verify will return once applyerAllowed returns true
+			if ok {
+				// only theoretical case - will not happen in real life
+				// since Verify will return once applyerAllowed returns true
 				return true, nil
 			}
+
 			continue
 		}
 
@@ -106,6 +123,7 @@ func (v *Verifyer) applyerAllowed(ctx context.Context, p project.Project, userna
 		if err != nil {
 			return false, err
 		}
+
 		if ok {
 			return true, nil
 		}
@@ -117,12 +135,13 @@ func (v *Verifyer) applyerAllowed(ctx context.Context, p project.Project, userna
 	return false, nil
 }
 
-// New returns new Verifyer
+// New returns new Verifyer.
 func New(ctx context.Context, c config.Config, ghc *github.Client) (*Verifyer, error) {
 	p, err := loadConfig(c.ConfigPath)
 	if err != nil {
 		return nil, err
 	}
+
 	t, err := loadGitHubTeams(ctx, ghc, c.RepoOwner)
 	if err != nil {
 		return nil, err
@@ -139,7 +158,8 @@ func New(ctx context.Context, c config.Config, ghc *github.Client) (*Verifyer, e
 	return &v, nil
 }
 
-func userInGitHubTeam(ctx context.Context, client *github.Client, teams map[string]int64, user, team string) (bool, error) {
+func userInGitHubTeam(ctx context.Context, client *github.Client,
+	teams map[string]int64, user, team string) (bool, error) {
 	if teamID, ok := teams[team]; ok {
 		member, resp, err := client.Teams.GetTeamMembership(ctx, teamID, user)
 
@@ -160,16 +180,17 @@ func userInGitHubTeam(ctx context.Context, client *github.Client, teams map[stri
 			return false, nil
 		}
 
-		return false, fmt.Errorf(`unknown membership state "%s"`, member.GetState())
+		return false, errors.Errorf(`unknown membership state "%s"`, member.GetState())
 	}
 
-	return false, fmt.Errorf(`team "%s" not found`, team)
+	return false, errors.Errorf(`team "%s" not found`, team)
 }
 
 func loadConfig(fileName string) ([]project.Project, error) {
 	type input struct {
 		Projects []project.Project `yaml:"projects"`
 	}
+
 	i := input{}
 
 	yamlFile, err := ioutil.ReadFile(fileName)
@@ -187,9 +208,10 @@ func loadConfig(fileName string) ([]project.Project, error) {
 
 func loadGitHubTeams(ctx context.Context, client *github.Client, org string) (map[string]int64, error) {
 	teams := make(map[string]int64)
+	teamsPerPage := 10
 
 	opt := &github.ListOptions{
-		PerPage: 10,
+		PerPage: teamsPerPage,
 	}
 
 	for {
@@ -205,6 +227,7 @@ func loadGitHubTeams(ctx context.Context, client *github.Client, org string) (ma
 		if resp.NextPage == 0 {
 			break
 		}
+
 		opt.Page = resp.NextPage
 	}
 
@@ -213,12 +236,11 @@ func loadGitHubTeams(ctx context.Context, client *github.Client, org string) (ma
 
 func isMergeable(ctx context.Context, client *github.Client, owner, repo string, prID int) (bool, error) {
 	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prID)
-
 	if err != nil {
 		return false, err
 	}
 
 	// clean means - mergeable and passing commit status
 	// Resource: https://docs.github.com/en/graphql/reference/enums#mergestatestatus
-	return pr.GetMerged() == false && pr.GetMergeable() && pr.GetMergeableState() == "clean", nil
+	return !pr.GetMerged() && pr.GetMergeable() && pr.GetMergeableState() == "clean", nil
 }

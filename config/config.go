@@ -1,10 +1,12 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Config represents the configuration object
+// Config represents the configuration object.
 type Config struct {
 	// environment variables provided by Atlantis
 	// resources:
@@ -23,10 +25,10 @@ type Config struct {
 	ConfigPath string `default:"atlantis-org-applyer.yaml" envconfig:"CONFIG_PATH"`
 }
 
-// New returns configuration
+// New returns configuration.
 func New() (Config, error) {
 	var c Config
 	err := envconfig.Process("atlantis-org-applyer", &c)
 
-	return c, err
+	return c, fmt.Errorf("error processing configuration: %w", err)
 }

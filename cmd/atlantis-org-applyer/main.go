@@ -47,7 +47,8 @@ func main() {
 	}
 
 	if !allowed {
-		log.Printf(`user "%s" can not apply Atlantis project "%s" on PR#%s for repository %s/%s`, c.Username, c.AtlantisProjectName, c.PRID, c.RepoOwner, c.RepoName)
+		msg := `user "%s" can not apply Atlantis project "%s" on PR#%s for repository %s/%s`
+		log.Printf(msg, c.Username, c.AtlantisProjectName, c.PRID, c.RepoOwner, c.RepoName)
 		os.Exit(1)
 	}
 }
