@@ -9,8 +9,11 @@ This project provides a solution (in form of a binary) which allows to grant `ap
 - add `atlantis-org-applyer` binary to the VM image or Docker image:
 
   ```bash
-  version=0.1.0
-  curl -SsLO "https://${version}"
+  version=1.0.0
+  curl -SsLO "https://github.com/czerasz/atlantis-org-applyer/releases/download/v${version}/atlantis-org-applyer-v${version}-linux-amd64"
+  curl -SsLO "https://github.com/czerasz/atlantis-org-applyer/releases/download/v${version}/atlantis-org-applyer-v${version}.sha256sum"
+  grep "atlantis-org-applyer-v${version}-linux-amd64" "atlantis-org-applyer-v${version}.sha256sum" | sha256sum -c
+  chmod u+x "atlantis-org-applyer-v${version}-linux-amd64"
   ```
 
 - mount configuration at `/etc/atlantis/atlantis-org-applyer.yaml`
