@@ -89,6 +89,7 @@ const releaseNotesGeneratorOptions = {
 };
 
 module.exports = {
+  branches: ["main"],
   plugins: [
     // analyze commits with conventional-changelog
     ['@semantic-release/commit-analyzer', commitAnalyzerOptions],
