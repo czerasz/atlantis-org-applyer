@@ -1,3 +1,15 @@
+## [1.0.1](https://github.com/czerasz/atlantis-org-applyer/compare/v1.0.0...v1.0.1) (2021-02-23)
+
+
+### Bug Fixes
+
+* loading config ([#1](https://github.com/czerasz/atlantis-org-applyer/issues/1)) ([3afa49f](https://github.com/czerasz/atlantis-org-applyer/commit/3afa49fe46c61d96f2b3a068ac98dca9969a70cd))
+
+
+### Documentation
+
+* update install section ([229ba3d](https://github.com/czerasz/atlantis-org-applyer/commit/229ba3dc30a5af749438819192c18fd757b3dbbc))
+
 # 1.0.0 (2021-02-21)
 
 
