@@ -28,7 +28,11 @@ type Config struct {
 // New returns configuration.
 func New() (Config, error) {
 	var c Config
-	err := envconfig.Process("atlantis-org-applyer", &c)
 
-	return c, fmt.Errorf("error processing configuration: %w", err)
+	err := envconfig.Process("atlantis-org-applyer", &c)
+	if err != nil {
+		return c, fmt.Errorf("error processing configuration: %w", err)
+	}
+
+	return c, nil
 }
