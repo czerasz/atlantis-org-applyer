@@ -5,11 +5,10 @@ import (
 	"os"
 	"strings"
 
-	logrus "github.com/sirupsen/logrus"
-
 	"github.com/czerasz/atlantis-org-applyer/config"
 	"github.com/czerasz/atlantis-org-applyer/verify"
 	"github.com/google/go-github/github"
+	logrus "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -56,7 +55,7 @@ func main() {
 	}
 }
 
-// initLogger initializes the logger with "debug" level by default
+// initLogger initializes the logger with "debug" level by default.
 func initLogger() *logrus.Logger {
 	lvl, ok := os.LookupEnv("LOG_LEVEL")
 

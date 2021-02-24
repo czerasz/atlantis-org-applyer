@@ -63,7 +63,8 @@ linters:
 
 linters-settings:
   funlen:
-    lines: 75
+    lines: 85
+    statements: 45
   cyclop:
     # the maximal code complexity to report
     max-complexity: 13
@@ -77,5 +78,8 @@ issues:
         - lll
     # Exclude lll issues specific comment
     - source: "// - code: https://github.com/runatlantis/atlantis"
+      linters:
+        - lll
+    - source: "// https://github.com/runatlantis"
       linters:
         - lll

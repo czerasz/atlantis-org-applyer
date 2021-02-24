@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-
-	logrus "github.com/sirupsen/logrus"
-
 	"net/http"
 	"strconv"
 	"sync"
@@ -15,6 +12,7 @@ import (
 	"github.com/czerasz/atlantis-org-applyer/project"
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
+	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -37,6 +35,7 @@ func (v *Verifyer) Verify(ctx context.Context, log *logrus.Logger) (bool, error)
 	prConvOnce := &sync.Once{}
 
 	var mergeableErr error
+
 	var mergeable bool
 
 	mergeableOnce := &sync.Once{}
@@ -250,7 +249,8 @@ func loadGitHubTeams(ctx context.Context, client *github.Client, org string) (ma
 	return teams, nil
 }
 
-func isMergeable(ctx context.Context, log *logrus.Logger, client *github.Client, owner, repo string, prID int) (bool, error) {
+func isMergeable(ctx context.Context, log *logrus.Logger, client *github.Client,
+	owner, repo string, prID int) (bool, error) {
 	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prID)
 	if err != nil {
 		return false, err
