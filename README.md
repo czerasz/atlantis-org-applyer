@@ -110,6 +110,7 @@ This project provides a solution (in form of a binary) which allows to grant `ap
 | `PROJECT_NAME` | Name of the project configured in `atlantis.yaml` | yes | `-` |
 | `USER_NAME` | Username of the VCS user running command, ex. `czerasz` | yes | `-` |
 | `CONFIG_PATH` | Configuration file used by `atlantis-org-applyer` | yes | `atlantis-org-applyer.yaml` |
+| `LOG_LEVEL` | Log level | no | `debug` |
 
 > **NOTE**
 >
