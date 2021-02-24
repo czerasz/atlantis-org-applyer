@@ -2,17 +2,19 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/czerasz/atlantis-org-applyer/config"
 	"github.com/czerasz/atlantis-org-applyer/verify"
 	"github.com/google/go-github/github"
+	logrus "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
 func main() {
+	log := initLogger()
+
 	c, err := config.New()
 	if err != nil {
 		log.Fatalf("error while loading the config: %s", err)
@@ -41,7 +43,7 @@ func main() {
 		log.Fatalf("error while creating verifyer: %s", err)
 	}
 
-	allowed, err := v.Verify(ctx)
+	allowed, err := v.Verify(ctx, log)
 	if err != nil {
 		log.Fatalf("error during verification: %s", err)
 	}
@@ -51,4 +53,23 @@ func main() {
 		log.Printf(msg, c.Username, c.AtlantisProjectName, c.PRID, c.RepoOwner, c.RepoName)
 		os.Exit(1)
 	}
+}
+
+// initLogger initializes the logger with "debug" level by default.
+func initLogger() *logrus.Logger {
+	lvl, ok := os.LookupEnv("LOG_LEVEL")
+
+	if !ok {
+		lvl = "debug"
+	}
+
+	ll, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		ll = logrus.DebugLevel
+	}
+
+	log := logrus.New()
+	log.SetLevel(ll)
+
+	return log
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/czerasz/atlantis-org-applyer/project"
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
+	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,25 +27,35 @@ type Verifyer struct {
 }
 
 // Verify returns true if apply should be executed.
-func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
+func (v *Verifyer) Verify(ctx context.Context, log *logrus.Logger) (bool, error) {
 	var pr int
 
+	var prErr error
+
 	prConvOnce := &sync.Once{}
+
+	var mergeableErr error
 
 	var mergeable bool
 
 	mergeableOnce := &sync.Once{}
 
 	for _, p := range v.projects {
+		log.Debugf("project: %+v", p)
+
 		valid := p.ValidRepoOwner(v.conf.RepoOwner)
 		if !valid {
 			continue
 		}
 
+		log.Debugf("repo owner valid (%s, %s): %t", v.conf.RepoOwner, p.RepoOwner, valid)
+
 		valid, err := p.ValidRepoName(v.conf.RepoName)
 		if err != nil {
 			return false, err
 		}
+
+		log.Debugf("repo name valid (%s, %s): %t", v.conf.RepoName, p.RepoName, valid)
 
 		if !valid {
 			continue
@@ -55,13 +66,15 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 			return false, err
 		}
 
+		log.Debugf("project name valid (%s, %s): %t", v.conf.AtlantisProjectName, p.Project, valid)
+
 		if !valid {
 			continue
 		}
 
-		if p.RequiredMergeable {
-			var prErr error
+		log.Debugf("mergeable stcate required: %t", p.RequiredMergeable)
 
+		if p.RequiredMergeable {
 			prConvOnce.Do(func() {
 				pr, prErr = strconv.Atoi(v.conf.PRID)
 			})
@@ -70,10 +83,8 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 				return false, fmt.Errorf("PR ID can not be parsed: %w", prErr)
 			}
 
-			var mergeableErr error
-
 			mergeableOnce.Do(func() {
-				mergeable, mergeableErr = isMergeable(ctx, v.client, v.conf.RepoOwner, v.conf.RepoName, pr)
+				mergeable, mergeableErr = isMergeable(ctx, log, v.client, v.conf.RepoOwner, v.conf.RepoName, pr)
 			})
 
 			if mergeableErr != nil {
@@ -81,6 +92,8 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 
 				return false, fmt.Errorf("%s: %w", msg, err)
 			}
+
+			log.Debugf("PR is mergeable: %t", mergeable)
 
 			if !mergeable {
 				continue
@@ -91,6 +104,8 @@ func (v *Verifyer) Verify(ctx context.Context) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+
+		log.Debugf("user allowed: %t", allowed)
 
 		if allowed {
 			return true, nil
@@ -234,13 +249,24 @@ func loadGitHubTeams(ctx context.Context, client *github.Client, org string) (ma
 	return teams, nil
 }
 
-func isMergeable(ctx context.Context, client *github.Client, owner, repo string, prID int) (bool, error) {
+func isMergeable(ctx context.Context, log *logrus.Logger, client *github.Client,
+	owner, repo string, prID int) (bool, error) {
 	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prID)
 	if err != nil {
 		return false, err
 	}
 
+	merged := pr.GetMerged()
+	mergeable := pr.GetMergeable()
+	state := pr.GetMergeableState()
+
+	log.Debugf("merged: %t, mergeable: %t, mergeable state: %s", merged, mergeable, state)
+
+	// Use the same state as in Atlantis:
+	// https://github.com/runatlantis/atlantis/blob/832afeaec1a96ab70c2f6c2d8c0c52cbac4a7c29/server/events/vcs/github_client.go#L278
+	stateOk := state == "clean" || state == "unstable" || state == "has_hooks"
+
 	// clean means - mergeable and passing commit status
 	// Resource: https://docs.github.com/en/graphql/reference/enums#mergestatestatus
-	return !pr.GetMerged() && pr.GetMergeable() && pr.GetMergeableState() == "clean", nil
+	return !merged && mergeable && stateOk, nil
 }
