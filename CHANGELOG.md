@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/czerasz/atlantis-org-applyer/compare/v1.0.1...v2.0.0) (2021-02-24)
+
+
+### Documentation
+
+* adjust version in README.md ([99c089e](https://github.com/czerasz/atlantis-org-applyer/commit/99c089ed6c0b5ed54dec10dadda3949b0dd8b280))
+
+
+### Fix
+
+* mergeable PR ([#2](https://github.com/czerasz/atlantis-org-applyer/issues/2)) ([541b35c](https://github.com/czerasz/atlantis-org-applyer/commit/541b35ca1864f32426ceceb0dea5e48cdc87d9a5))
+
 ## [1.0.1](https://github.com/czerasz/atlantis-org-applyer/compare/v1.0.0...v1.0.1) (2021-02-23)
 
 
