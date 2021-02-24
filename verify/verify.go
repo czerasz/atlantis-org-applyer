@@ -262,7 +262,11 @@ func isMergeable(ctx context.Context, log *logrus.Logger, client *github.Client,
 
 	log.Debugf("merged: %t, mergeable: %t, mergeable state: %s", merged, mergeable, state)
 
+	// Use the same state as in Atlantis:
+	// https://github.com/runatlantis/atlantis/blob/832afeaec1a96ab70c2f6c2d8c0c52cbac4a7c29/server/events/vcs/github_client.go#L278
+	stateOk := state == "clean" || state == "unstable" || state == "has_hooks"
+
 	// clean means - mergeable and passing commit status
 	// Resource: https://docs.github.com/en/graphql/reference/enums#mergestatestatus
-	return !merged && mergeable && state == "clean", nil
+	return !merged && mergeable && stateOk, nil
 }
